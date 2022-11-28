@@ -326,7 +326,7 @@ void main_procedure(model& m, const boost::optional<model>& ref, // m is non-con
 	par.num_threads = cpu;
 	par.display_progress = (verbosity > 1);
 
-	const fl slope = 1e6; // FIXME: too large? used to be 100
+	const fl slope = 1e6; // FIXME: too large? used to be 100; I think this one also doesn't make a difference
 	if(randomize_only) {
 		do_randomization(m, out_name,
 			             corner1, corner2, seed, verbosity, log);
@@ -335,6 +335,26 @@ void main_procedure(model& m, const boost::optional<model>& ref, // m is non-con
 		non_cache nc        (m, gd, &prec,         slope); // if gd has 0 n's, this will not constrain anything
 		non_cache nc_widened(m, gd, &prec_widened, slope); // if gd has 0 n's, this will not constrain anything
 		if(no_cache) {
+			nc.eval_deriv(m, 1.0); // this param doesn't make any difference which is reassuring
+			vecv minus_forces = m.get_minus_forces();
+			int n_atoms = minus_forces.size();
+			for(int i=0; i<n_atoms; i++){
+				log << i << ": ";
+				for(int j=0; j<3; j++){
+					log << minus_forces[i].data[j] << " ";
+				}
+				log << "\n";
+			}
+			vecv ligand_coords = m.get_ligand_coords();
+			for(int i=0; i<ligand_coords.size(); i++){
+				log << "C " << i << ": ";
+				for(int j=0; j<3; j++){
+					log << ligand_coords[i].data[j] << " ";
+					}
+					log << '\n';
+					}
+
+			return;
 			do_search(m, ref, wt, prec, nc, prec_widened, nc_widened, nc,
 					  out_name,
 					  corner1, corner2,
@@ -686,7 +706,7 @@ Thank you!\n";
 
 		main_procedure(m, ref, 
 					out_name,
-					score_only, local_only, randomize_only, false, // no_cache == false
+					score_only, local_only, randomize_only, true, // no_cache == false
 					gd, exhaustiveness,
 					weights,
 					cpu, seed, verbosity, max_modes_sz, energy_range, log);

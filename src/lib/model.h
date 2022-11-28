@@ -165,6 +165,13 @@ struct model {
 				tmp.push_back(coords[i]);
 		return tmp;
 	}
+
+	vecv get_minus_forces() const {
+		vecv tmp;
+		VINA_FOR(i, num_movable_atoms())
+			tmp.push_back(minus_forces[i]);
+		return tmp;
+	}
 	void check_internal_pairs() const;
 	void print_stuff() const; // FIXME rm
 
